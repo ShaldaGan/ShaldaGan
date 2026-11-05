@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>גן שלדג - אפליקציית הגן</title>
+
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <!-- Firebase Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
     <style>
         :root {
             --primary: #FF7043;
@@ -742,6 +748,40 @@
     </div>
 
     <script>
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDGI0FWlpVRhqwqMIBQnaj2mvpFP7l2eGI",
+            authDomain: "gan-shaldag.firebaseapp.com",
+            projectId: "gan-shaldag",
+            storageBucket: "gan-shaldag.firebasestorage.app",
+            messagingSenderId: "282814332862",
+            appId: "1:282814332862:web:9d1eba7bc94a8552cb03ef",
+            measurementId: "G-FKMF4CP3MH"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
+        let isFirstLoad = true;
+        
+        db.collection("kindergarten").doc("main_data").onSnapshot((doc) => {
+            if (doc.exists) {
+                const cloudData = doc.data();
+                if (JSON.stringify(cloudData) !== JSON.stringify(appData)) {
+                    appData = cloudData;
+                    if (!appData.shared) appData.shared = { duties: [], shabbat: ["", ""] };
+                    if (!appData.images) appData.images = {};
+                    localStorage.setItem('kindergarten_shaldag_v11_data', JSON.stringify(appData));
+                    if (typeof renderAll === 'function') {
+                        renderAll();
+                    }
+                }
+            }
+            if (isFirstLoad) {
+                isFirstLoad = false;
+                renderAll(); // Ensure first render after fetching cloud data
+            }
+        });
+
         // Children list
         const childrenList = [
             { id: 1, name: "אדם", type: "img_lion", fallback: "🦁" },
@@ -823,6 +863,9 @@
         function saveAllData() {
             try {
                 localStorage.setItem('kindergarten_shaldag_v11_data', JSON.stringify(appData));
+                db.collection("kindergarten").doc("main_data").set(appData)
+                  .then(() => { console.log("Synced to cloud!"); })
+                  .catch((e) => { console.error("Sync error:", e); });
             } catch(e) {}
         }
 
@@ -1402,31 +1445,5 @@
             selectDay(todayName);
         };
     </script>
-npm install firebase
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyDGI0FWlpVRhqwqMIBQnaj2mvpFP7l2eGI",
-  authDomain: "gan-shaldag.firebaseapp.com",
-  projectId: "gan-shaldag",
-  storageBucket: "gan-shaldag.firebasestorage.app",
-  messagingSenderId: "282814332862",
-  appId: "1:282814332862:web:9d1eba7bc94a8552cb03ef",
-  measurementId: "G-FKMF4CP3MH"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-<!-- Firebase App SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<!-- Firebase Firestore SDK (לבסיס הנתונים בזמן אמת) -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </body>
 </html>
