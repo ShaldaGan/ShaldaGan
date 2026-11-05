@@ -1402,5 +1402,31 @@
             selectDay(todayName);
         };
     </script>
+npm install firebase
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyDGI0FWlpVRhqwqMIBQnaj2mvpFP7l2eGI",
+  authDomain: "gan-shaldag.firebaseapp.com",
+  projectId: "gan-shaldag",
+  storageBucket: "gan-shaldag.firebasestorage.app",
+  messagingSenderId: "282814332862",
+  appId: "1:282814332862:web:9d1eba7bc94a8552cb03ef",
+  measurementId: "G-FKMF4CP3MH"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+<!-- Firebase App SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<!-- Firebase Firestore SDK (לבסיס הנתונים בזמן אמת) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </body>
 </html>
