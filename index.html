@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>גן שלדג - אפליקציית הגן</title>
+
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <!-- Firebase Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        :root {
+            --primary: #FF7043;
+            --primary-light: #FFAB91;
+            --secondary: #26A69A;
+            --secondary-light: #80CBC4;
+            --bg-color: #FFF9C4;
+            --card-bg: #FFFFFF;
+            --text-color: #37474F;
+            --accent: #FFA726;
+            --shadow: 0 8px 24px rgba(0,0,0,0.12);
+            --radius: 24px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 15px 30px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            font-size: 40px;
+            background: #E0F7FA;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            border: 3px solid var(--secondary);
+            cursor: pointer;
+            transition: transform 0.2s;
+            overflow: hidden;
+        }
+        
+        .logo-icon img { width: 100%; height: 100%; object-fit: contain; }
+        .logo-icon:active { transform: scale(0.9); }
+
+        .kindergarten-title h1 {
+            font-size: 28px;
+            color: var(--secondary);
+            font-weight: 800;
+        }
+
+        .kindergarten-title p {
+            font-size: 16px;
+            color: #78909C;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .settings-btn {
+            background: #ECEFF1;
+            border: none;
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.2s;
+        }
+        
+        .settings-btn:hover { background: #CFD8DC; }
+
+        .days-bar {
+            display: flex;
+            gap: 10px;
+            background: white;
+            padding: 12px 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 25px;
+            justify-content: center;
+            overflow-x: auto;
+        }
+
+        .day-btn {
+            background: #F5F5F5;
+            border: none;
+            padding: 12px 22px;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #546E7A;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .day-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(255,112,67,0.4);
+            transform: scale(1.05);
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .screen-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 15px 25px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .nav-btn {
+            background: #ECEFF1;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #37474F;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .nav-btn:hover { background: #CFD8DC; }
+        .nav-btn.home { background: #E8F5E9; color: #2E7D32; }
+
+        .screen-title {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--secondary);
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .menu-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 4px solid transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .menu-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+        }
+
+        .menu-icon {
+            font-size: 64px;
+            width: 110px;
+            height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #FFF3E0;
+            border-radius: 50%;
+            margin-bottom: 5px;
+            overflow: hidden;
+        }
+        .menu-icon img { width: 100%; height: 100%; object-fit: contain; }
+
+        .menu-card h3 {
+            font-size: 22px;
+            color: #37474F;
+            font-weight: 700;
+        }
+
+        .morning-card {
+            background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
+            border-radius: var(--radius);
+            padding: 35px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 3px solid #FFCC80;
+        }
+
+        .morning-text h2 {
+            font-size: 36px;
+            color: #E65100;
+            margin-bottom: 10px;
+            font-weight: 900;
+        }
+
+        .morning-text p {
+            font-size: 22px;
+            color: #EF6C00;
+        }
+
+        .morning-weather-badge {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #37474F;
+        }
+        
+        .w-icon-container {
+            width: 100px; height: 100px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 40px;
+        }
+        
+        .w-icon-container img {
+            width: 100%; height: 100%; object-fit: contain;
+        }
+
+        .attendance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .child-card {
+            background: white;
+            border-radius: 18px;
+            padding: 18px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 3px solid #E0E0E0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .child-card .animal-icon {
+            font-size: 42px;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #F5F5F5;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+        .child-card .animal-icon img { width: 100%; height: 100%; object-fit: contain; }
+
+        .child-card .child-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #37474F;
+        }
+
+        .child-card .child-status {
+            font-size: 14px;
+            color: #90A4AE;
+            min-height: 20px;
+        }
+
+        .child-card.present {
+            border-color: #4CAF50;
+            background: #E8F5E9;
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+            transform: scale(1.02);
+        }
+
+        .child-card.present .child-status {
+            color: #2E7D32;
+            font-weight: bold;
+        }
+
+        .weather-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .weather-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 25px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            border: 4px solid #E0E0E0;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .weather-card.selected {
+            border-color: #29B6F6;
+            background: #E1F5FE;
+            box-shadow: 0 8px 25px rgba(41, 182, 246, 0.3);
+            transform: scale(1.03);
+        }
+
+        .weather-card h3 { font-size: 20px; color: #37474F; font-weight: bold; }
+        .weather-card p { font-size: 15px; color: #546E7A; }
+
+        .duties-layout { display: flex; flex-direction: column; gap: 25px; }
+        .section-box { background: white; border-radius: var(--radius); padding: 25px; box-shadow: var(--shadow); }
+        .section-box h3 { font-size: 22px; color: var(--secondary); margin-bottom: 15px; border-bottom: 2px solid #E0F2F1; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .duties-selected-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; min-height: 100px; }
+
+        .action-btn {
+            background: #FF7043; color: white; border: none; padding: 10px 20px;
+            border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s;
+        }
+        .action-btn:hover { background: #F4511E; }
+
+        .shabbat-container { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        @media (max-width: 768px) { .shabbat-container { grid-template-columns: 1fr; } }
+        .shabbat-slot { background: #FFF8E1; border-radius: var(--radius); padding: 30px; text-align: center; box-shadow: var(--shadow); border: 4px dashed #FFB74D; min-height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; }
+        .shabbat-slot.filled { border-style: solid; border-color: #FFA726; background: white; }
+        .shabbat-slot .animal-img-wrapper { width: 85px; height: 85px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #FFF3E0; border-radius: 50%; font-size: 40px;}
+        .shabbat-slot .animal-img-wrapper img { width: 100%; height: 100%; object-fit: contain; }
+
+        .autocomplete-container { position: relative; width: 100%; max-width: 400px; margin: 0 auto; }
+        .autocomplete-input { width: 100%; padding: 15px 20px; font-size: 20px; border: 3px solid #B0BEC5; border-radius: 16px; outline: none; text-align: center; }
+        .autocomplete-input:focus { border-color: var(--secondary); }
+        .autocomplete-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white; border-radius: 0 0 16px 16px; box-shadow: var(--shadow); max-height: 200px; overflow-y: auto; z-index: 10; display: none; }
+        .autocomplete-item { padding: 12px 20px; font-size: 18px; cursor: pointer; text-align: right; border-bottom: 1px solid #ECEFF1; }
+        .autocomplete-item:hover { background: #E0F2F1; }
+
+        .schedule-list { display: flex; flex-direction: column; gap: 15px; }
+        .schedule-item { background: white; border-radius: 18px; padding: 20px 25px; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: space-between; border: 3px solid #CFD8DC; cursor: grab; transition: transform 0.2s, box-shadow 0.2s; }
+        .schedule-item:active { cursor: grabbing; }
+        .schedule-item.dragging { opacity: 0.5; border: 3px dashed var(--secondary); transform: scale(1.02); box-shadow: 0 15px 30px rgba(0,0,0,0.15); }
+        .schedule-info { display: flex; align-items: center; gap: 20px; pointer-events: none; }
+        .schedule-icon { font-size: 40px; width: 60px; height: 60px; background: #F1F8E9; display: flex; align-items: center; justify-content: center; border-radius: 50%; overflow: hidden;}
+        .schedule-icon img { width: 100%; height: 100%; object-fit: contain; }
+        .schedule-title { font-size: 22px; font-weight: bold; color: #37474F; }
+        .schedule-title input { pointer-events: auto; }
+        .schedule-controls { display: flex; gap: 10px; align-items: center; }
+        .sched-btn { background: #ECEFF1; border: none; padding: 8px 16px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; color: #37474F; }
+        .sched-btn:hover { background: #CFD8DC; }
+
+        .activity-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; max-height: 50vh; overflow-y: auto; padding: 10px; }
+        .activity-card { background: #F5F5F5; border: 2px solid #E0E0E0; border-radius: 16px; padding: 15px; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .activity-card:hover { background: #E1F5FE; border-color: #29B6F6; }
+        .activity-card .act-icon { font-size: 36px; margin-bottom: 8px; width:50px; height:50px; margin: 0 auto; display:flex; align-items:center; justify-content:center; overflow:hidden;}
+        .activity-card .act-icon img { width: 100%; height: 100%; object-fit: contain; }
+        .activity-card .act-name { font-size: 16px; font-weight: bold; color: #37474F; margin-top:5px;}
+
+        /* Modals */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-box { background: white; padding: 30px; border-radius: var(--radius); box-shadow: var(--shadow); text-align: center; max-width: 600px; width: 95%; display: flex; flex-direction: column; gap: 20px; }
+        .modal-box h3 { font-size: 24px; color: #37474F; }
+        .modal-actions { display: flex; gap: 15px; justify-content: center; margin-top: 10px; }
+        .modal-btn { padding: 12px 25px; border-radius: 14px; font-size: 18px; font-weight: bold; cursor: pointer; border: none; }
+        .modal-btn.confirm { background: #E53935; color: white; }
+        .modal-btn.cancel { background: #E0E0E0; color: #37474F; }
+
+        /* Settings grid */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .settings-card {
+            background: #F5F5F5;
+            padding: 20px;
+            border-radius: 16px;
+            border: 2px solid #E0E0E0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .settings-card input {
+            display: none;
+        }
+        .settings-card label {
+            background: var(--secondary);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .settings-preview {
+            width: 60px; height: 60px;
+            border-radius: 12px;
+            background: white;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            font-size: 30px;
+            border: 2px dashed #B0BEC5;
+        }
+        .settings-preview img {
+            width: 100%; height: 100%; object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <div class="logo-icon" id="header-bird-icon" onclick="playBirdGreeting()" title="לחץ עלי!">🐦</div>
+            <div class="kindergarten-title">
+                <h1>גן שלדג</h1>
+                <p>אפליקציית הלוח האינטראקטיבי</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <div id="header-date-display" style="font-size: 20px; font-weight: bold; color: var(--secondary);"></div>
+            <button class="settings-btn" onclick="showScreen('settings')" title="הגדרות תמונות">⚙️</button>
+        </div>
+    </header>
+
+    <div class="days-bar" id="days-bar">
+        <button class="day-btn" onclick="selectDay('ראשון')">יום ראשון</button>
+        <button class="day-btn" onclick="selectDay('שני')">יום שני</button>
+        <button class="day-btn" onclick="selectDay('שלישי')">יום שלישי</button>
+        <button class="day-btn" onclick="selectDay('רביעי')">יום רביעי</button>
+        <button class="day-btn" onclick="selectDay('חמישי')">יום חמישי</button>
+        <button class="day-btn" onclick="selectDay('שישי')">יום שישי</button>
+    </div>
+
+    <div class="main-container">
+
+        <!-- HOME SCREEN -->
+        <div id="screen-home" class="screen active">
+            <div class="morning-card">
+                <div class="morning-text">
+                    <h2 id="morning-greeting">בוקר טוב!</h2>
+                    <p id="morning-day-text">היום יום ראשון בגן שלדג</p>
+                </div>
+                <div class="morning-weather-badge" id="home-weather-display">
+                    <span class="w-icon-container" id="home-weather-icon">☀️</span>
+                    <span id="home-weather-text">שמשי / בהיר</span>
+                </div>
+            </div>
+
+            <div class="menu-grid">
+                <div class="menu-card" onclick="showScreen('attendance')">
+                    <div class="menu-icon" id="menu-icon-attendance">👧👦</div>
+                    <h3>נוכחות</h3>
+                </div>
+                <div class="menu-card" onclick="showScreen('weather')">
+                    <div class="menu-icon" id="menu-icon-weather">🌤️</div>
+                    <h3>מזג אוויר</h3>
+                </div>
+                <div class="menu-card" onclick="showScreen('schedule')">
+                    <div class="menu-icon" id="menu-icon-schedule">🥪</div>
+                    <h3>סדר יום</h3>
+                </div>
+                <div class="menu-card" onclick="showScreen('duties')">
+                    <div class="menu-icon" id="menu-icon-duties">🧹</div>
+                    <h3>תורנים</h3>
+                </div>
+                <div class="menu-card" onclick="showScreen('shabbat')">
+                    <div class="menu-icon" id="menu-icon-shabbat">🍷</div>
+                    <h3>מקבלי השבת</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- SETTINGS SCREEN -->
+        <div id="screen-settings" class="screen">
+            <div class="screen-header">
+                <button class="nav-btn home" onclick="showScreen('home')">🏠 בית</button>
+                <div class="screen-title">הגדרות תמונות ואייקונים</div>
+                <button class="nav-btn" onclick="showScreen('home')">➜ חזור</button>
+            </div>
+            <div style="background: white; padding: 25px; border-radius: var(--radius); box-shadow: var(--shadow);">
+                <p style="font-size: 18px; color: #546E7A; margin-bottom: 20px;">
+                    כאן תוכלו לטעון את התמונות האמיתיות. האפליקציה תשמור אותן ותשתמש בהן במקום באייקונים הרגילים!
+                </p>
+                
+                <h4 style="margin-top:20px; margin-bottom:10px; color:#26A69A;">דמויות כלליות</h4>
+                <div class="settings-grid">
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">לוגו שלדג</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_bird')">טען תמונה</label></div><div class="settings-preview" id="preview-img_bird">🐦</div></div>
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">קול שלדג (אודיו MP3/WAV)</div><label><input type="file" accept="audio/*" onchange="uploadAudio(event, 'audio_bird')">טען אודיו</label></div><div class="settings-preview" id="preview-audio_bird" style="font-size:20px;">🔊</div></div>
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">תמונת תפריט: סדר יום</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_menu_schedule')">טען תמונה</label></div><div class="settings-preview" id="preview-img_menu_schedule">🥪</div></div>
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">תמונת נוכחות ראשי</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_attendance_main')">טען תמונה</label></div><div class="settings-preview" id="preview-img_attendance_main">👧👦</div></div>
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">אריה (בנים)</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_lion')">טען תמונה</label></div><div class="settings-preview" id="preview-img_lion">🦁</div></div>
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">חד-קרן (בנות)</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_unicorn')">טען תמונה</label></div><div class="settings-preview" id="preview-img_unicorn">🦄</div></div>
+                </div>
+
+                <h4 style="margin-top:30px; margin-bottom:10px; color:#26A69A;">מזג אוויר</h4>
+                <div class="settings-grid">
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">שמשי / בהיר</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_sunny')">טען תמונה</label></div><div class="settings-preview" id="preview-img_sunny">☀️</div></div>
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">מעונן חלקית</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_partly')">טען תמונה</label></div><div class="settings-preview" id="preview-img_partly">⛅</div></div>
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">קריר</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_cool')">טען תמונה</label></div><div class="settings-preview" id="preview-img_cool">🧥</div></div>
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">גשום</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_rainy')">טען תמונה</label></div><div class="settings-preview" id="preview-img_rainy">☔</div></div>
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">סוער (ברקים)</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_stormy')">טען תמונה</label></div><div class="settings-preview" id="preview-img_stormy">⚡🚗</div></div>
+                </div>
+
+                <h4 style="margin-top:30px; margin-bottom:10px; color:#26A69A;">פעילויות סדר יום</h4>
+                <div class="settings-grid">
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">מפגש בוקר</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_morning')">טען תמונה</label></div><div class="settings-preview" id="preview-img_morning">☀️</div></div>
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">זמן גינה</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_garden')">טען תמונה</label></div><div class="settings-preview" id="preview-img_garden">🌱</div></div>
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">קבלת שבת</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_shabbat')">טען תמונה</label></div><div class="settings-preview" id="preview-img_shabbat">🕯️</div></div>
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">חצר קדמית</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_yard_front')">טען תמונה</label></div><div class="settings-preview" id="preview-img_yard_front">🏡</div></div>
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">ארוחת בוקר</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_breakfast')">טען תמונה</label></div><div class="settings-preview" id="preview-img_breakfast">🥪</div></div>
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">מפגש כסאות</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_chairs')">טען תמונה</label></div><div class="settings-preview" id="preview-img_chairs">🪑</div></div>
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">זמן חופשי</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_free')">טען תמונה</label></div><div class="settings-preview" id="preview-img_free">⏰</div></div>
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">ארוחת צהריים</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_lunch')">טען תמונה</label></div><div class="settings-preview" id="preview-img_lunch">🍛</div></div>
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">חוג מוזיקה</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_music')">טען תמונה</label></div><div class="settings-preview" id="preview-img_music">🎵</div></div>
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">חוג ספורט</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_sport')">טען תמונה</label></div><div class="settings-preview" id="preview-img_sport">⚽</div></div>
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">חצר גדולה</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_yard')">טען תמונה</label></div><div class="settings-preview" id="preview-img_yard">🛝</div></div>
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">עבודה בקבוצות</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_groups')">טען תמונה</label></div><div class="settings-preview" id="preview-img_groups">🎨</div></div>
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">זמן סיפור</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_story')">טען תמונה</label></div><div class="settings-preview" id="preview-img_story">📖</div></div>
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">משחק ויצירה</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_art')">טען תמונה</label></div><div class="settings-preview" id="preview-img_art">✂️</div></div>
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">רובי גוף</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_robot')">טען תמונה</label></div><div class="settings-preview" id="preview-img_robot">🤖</div></div>
+                    <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">אחר (מותאם אישית)</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_other')">טען תמונה</label></div><div class="settings-preview" id="preview-img_other">⭐</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ATTENDANCE SCREEN -->
+        <div id="screen-attendance" class="screen">
+            <div class="screen-header">
+                <button class="nav-btn home" onclick="showScreen('home')">🏠 בית</button>
+                <div class="screen-title">נוכחות יומי</div>
+                <button class="nav-btn" onclick="showScreen('home')">➜ חזור</button>
+            </div>
+            <div style="background: white; padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 id="attendance-count-title" style="font-size: 20px; color: #37474F;">הגיעו היום: 0 מתוך 27</h3>
+                    <button class="action-btn" onclick="resetAttendance()">איפוס נוכחות ליום חדש</button>
+                </div>
+                <div class="attendance-grid" id="attendance-grid"></div>
+            </div>
+        </div>
+
+        <!-- WEATHER SCREEN -->
+        <div id="screen-weather" class="screen">
+            <div class="screen-header">
+                <button class="nav-btn home" onclick="showScreen('home')">🏠 בית</button>
+                <div class="screen-title">מזג האוויר של היום</div>
+                <button class="nav-btn" onclick="showScreen('home')">➜ חזור</button>
+            </div>
+            <div class="weather-grid">
+                <div class="weather-card" onclick="setWeather('sunny', 'img_sunny', '☀️', 'שמשי / בהיר', 'יום חמים ונעים')">
+                    <div class="w-icon-container" id="w-icon-img_sunny">☀️</div>
+                    <h3>שמשי / בהיר</h3>
+                    <p>יום חמים ונעים</p>
+                </div>
+                <div class="weather-card" onclick="setWeather('partly', 'img_partly', '⛅', 'מעונן חלקית', 'שמש מציצה בין עננים')">
+                    <div class="w-icon-container" id="w-icon-img_partly">⛅</div>
+                    <h3>מעונן חלקית</h3>
+                    <p>שמש מציצה בין עננים</p>
+                </div>
+                <div class="weather-card" onclick="setWeather('cool', 'img_cool', '🧥', 'קריר', 'רוח קלה, לובשים שרוול ארוך')">
+                    <div class="w-icon-container" id="w-icon-img_cool">🧥</div>
+                    <h3>קריר</h3>
+                    <p>רוח קלה, לובשים שרוול ארוך</p>
+                </div>
+                <div class="weather-card" onclick="setWeather('rainy', 'img_rainy', '☔', 'גשום', 'להביא מטריה, כדאי לחפש חלזונות!')">
+                    <div class="w-icon-container" id="w-icon-img_rainy">☔</div>
+                    <h3>גשום</h3>
+                    <p>להביא מטריה, כדאי לחפש חלזונות!</p>
+                </div>
+                <div class="weather-card" onclick="setWeather('stormy', 'img_stormy', '⚡🚗', 'ברקים ורעמים', 'יום סוער, עדיף להישאר בפנים')">
+                    <div class="w-icon-container" id="w-icon-img_stormy">⚡🚗</div>
+                    <h3>ברקים ורעמים</h3>
+                    <p>יום סוער, עדיף להישאר בפנים</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- DUTIES SCREEN -->
+        <div id="screen-duties" class="screen">
+            <div class="screen-header">
+                <button class="nav-btn home" onclick="showScreen('home')">🏠 בית</button>
+                <div class="screen-title">תורנות שבועית</div>
+                <button class="nav-btn" onclick="showScreen('home')">➜ חזור</button>
+            </div>
+            <div class="duties-layout">
+                <div class="section-box">
+                    <h3>
+                        <span>⭐ תורני השבוע (עד 6 ילדים)</span>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <button class="action-btn" onclick="saveCurrentToArchiveExplicit('duties')" style="font-size: 14px; padding: 6px 12px; background: #2E7D32;">💾 שמור לארכיון</button>
+                            <button class="action-btn" onclick="openArchiveModal('duties')" style="font-size: 14px; padding: 6px 12px; background: var(--secondary);">📚 ארכיון תורנים</button>
+                            <button class="action-btn" onclick="confirmResetDuties()" style="font-size: 14px; padding: 6px 12px;">איפוס תורנים</button>
+                        </div>
+                    </h3>
+                    <div class="duties-selected-grid" id="duties-selected-grid"></div>
+                </div>
+                <div class="section-box">
+                    <h3>כל ילדי הגן (לחץ להעלאה לתורנים)</h3>
+                    <div class="attendance-grid" id="duties-pool-grid"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SHABBAT SCREEN -->
+        <div id="screen-shabbat" class="screen">
+            <div class="screen-header">
+                <button class="nav-btn home" onclick="showScreen('home')">🏠 בית</button>
+                <div class="screen-title">מקבלי השבת</div>
+                <button class="nav-btn" onclick="showScreen('home')">➜ חזור</button>
+            </div>
+            <div style="background: white; padding: 25px; border-radius: var(--radius); box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 25px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <h3 style="font-size: 22px; color: var(--secondary);">בחירת 2 מקבלי השבת השבועיים</h3>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button class="action-btn" onclick="saveCurrentToArchiveExplicit('shabbat')" style="background: #2E7D32; font-size:16px;">💾 שמור לארכיון</button>
+                        <button class="action-btn" onclick="openArchiveModal('shabbat')" style="background: var(--secondary);">📚 ארכיון שבת</button>
+                        <button class="action-btn" onclick="confirmResetShabbat()">איפוס שבת</button>
+                    </div>
+                </div>
+                <div class="shabbat-container">
+                    <div class="shabbat-slot" id="shabbat-slot-0"></div>
+                    <div class="shabbat-slot" id="shabbat-slot-1"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCHEDULE SCREEN -->
+        <div id="screen-schedule" class="screen">
+            <div class="screen-header">
+                <button class="nav-btn home" onclick="showScreen('home')">🏠 בית</button>
+                <div class="screen-title">סדר יום</div>
+                <button class="nav-btn" onclick="showScreen('home')">➜ חזור</button>
+            </div>
+            <div style="background: white; padding: 25px; border-radius: var(--radius); box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="font-size: 20px; color: #37474F;">סדר הפעילויות בגן (ניתן לגרור כדי לשנות סדר)</h3>
+                    <button class="action-btn" onclick="openActivityPicker('add')">+ הוסף פעילות ללו"ז</button>
+                </div>
+                <div class="schedule-list" id="schedule-list-container"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- GENERAL MODAL (CONFIRMATIONS) -->
+    <div class="modal-overlay" id="custom-modal">
+        <div class="modal-box">
+            <h3 id="modal-title">אישור פעולה</h3>
+            <p id="modal-desc" style="font-size: 18px; color: #546E7A;"></p>
+            <div class="modal-actions">
+                <button class="modal-btn confirm" id="modal-confirm-btn" onclick="modalConfirm()">אישור</button>
+                <button class="modal-btn cancel" onclick="closeModal()">ביטול</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ARCHIVE MODAL -->
+    <div class="modal-overlay" id="archive-modal">
+        <div class="modal-box" style="max-width: 650px;">
+            <h3 id="archive-modal-title">ארכיון</h3>
+            <div id="archive-content" style="max-height: 50vh; overflow-y: auto; text-align: right; padding: 10px; font-size: 18px;"></div>
+            <div class="modal-actions">
+                <button class="modal-btn cancel" onclick="closeArchiveModal()" style="width:100%;">סגור</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ACTIVITY PICKER MODAL -->
+    <div class="modal-overlay" id="activity-modal">
+        <div class="modal-box" style="max-width: 700px;">
+            <h3>בחר פעילות</h3>
+            <div class="activity-grid" id="activity-grid-container">
+                <!-- Populated dynamically -->
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn cancel" onclick="closeActivityPicker()">ביטול</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDGI0FWlpVRhqwqMIBQnaj2mvpFP7l2eGI",
+            authDomain: "gan-shaldag.firebaseapp.com",
+            projectId: "gan-shaldag",
+            storageBucket: "gan-shaldag.firebasestorage.app",
+            messagingSenderId: "282814332862",
+            appId: "1:282814332862:web:9d1eba7bc94a8552cb03ef",
+            measurementId: "G-FKMF4CP3MH"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
+        let isFirstLoad = true;
+        
+        db.collection("kindergarten").doc("main_data").onSnapshot((doc) => {
+            if (doc.exists) {
+                const cloudData = doc.data();
+                if (JSON.stringify(cloudData) !== JSON.stringify(appData)) {
+                    appData = cloudData;
+                    if (!appData.shared) appData.shared = { duties: [], shabbat: ["", ""] };
+                    if (!appData.images) appData.images = {};
+                    localStorage.setItem('kindergarten_shaldag_v11_data', JSON.stringify(appData));
+                    if (typeof renderAll === 'function') {
+                        renderAll();
+                    }
+                }
+            }
+            if (isFirstLoad) {
+                isFirstLoad = false;
+                renderAll(); // Ensure first render after fetching cloud data
+            }
+        });
+
+        // Children list
+        const childrenList = [
+            { id: 1, name: "אדם", type: "img_lion", fallback: "🦁" },
+            { id: 2, name: "איילון", type: "img_lion", fallback: "🦁" },
+            { id: 3, name: "איתן", type: "img_lion", fallback: "🦁" },
+            { id: 4, name: "אליאנה", type: "img_unicorn", fallback: "🦄" },
+            { id: 5, name: "אלמוג", type: "img_unicorn", fallback: "🦄" },
+            { id: 6, name: "אן", type: "img_unicorn", fallback: "🦄" },
+            { id: 7, name: "ברי", type: "img_lion", fallback: "🦁" },
+            { id: 8, name: "גאיה", type: "img_unicorn", fallback: "🦄" },
+            { id: 9, name: "גור", type: "img_lion", fallback: "🦁" },
+            { id: 10, name: "דור", type: "img_lion", fallback: "🦁" },
+            { id: 11, name: "דרור", type: "img_unicorn", fallback: "🦄" },
+            { id: 12, name: "ינאי", type: "img_lion", fallback: "🦁" },
+            { id: 13, name: "ליה", type: "img_unicorn", fallback: "🦄" },
+            { id: 14, name: "לילי", type: "img_unicorn", fallback: "🦄" },
+            { id: 15, name: "לירי", type: "img_unicorn", fallback: "🦄" },
+            { id: 16, name: "מאור", type: "img_lion", fallback: "🦁" },
+            { id: 17, name: "נגה", type: "img_unicorn", fallback: "🦄" },
+            { id: 18, name: "ניר", type: "img_lion", fallback: "🦁" },
+            { id: 19, name: "עומר מ.", type: "img_lion", fallback: "🦁" },
+            { id: 20, name: "עומר ס.", type: "img_unicorn", fallback: "🦄" },
+            { id: 21, name: "עידו", type: "img_lion", fallback: "🦁" },
+            { id: 22, name: "עמית", type: "img_unicorn", fallback: "🦄" },
+            { id: 23, name: "פלג", type: "img_lion", fallback: "🦁" },
+            { id: 24, name: "רומי", type: "img_unicorn", fallback: "🦄" },
+            { id: 25, name: "ריי", type: "img_lion", fallback: "🦁" },
+            { id: 26, name: "שון", type: "img_lion", fallback: "🦁" },
+            { id: 27, name: "שי", type: "img_unicorn", fallback: "🦄" }
+        ];
+
+        // Schedule Activity Bank
+        const activityBank = [
+            { name: "מפגש בוקר", key: "img_morning", fallback: "☀️" },
+            { name: "זמן גינה", key: "img_garden", fallback: "🌱" },
+            { name: "קבלת שבת", key: "img_shabbat", fallback: "🕯️" },
+            { name: "חצר קדמית", key: "img_yard_front", fallback: "🏡" },
+            { name: "ארוחת בוקר", key: "img_breakfast", fallback: "🥪" },
+            { name: "מפגש כסאות", key: "img_chairs", fallback: "🪑" },
+            { name: "זמן חופשי", key: "img_free", fallback: "⏰" },
+            { name: "ארוחת צהריים", key: "img_lunch", fallback: "🍛" },
+            { name: "חוג מוזיקה", key: "img_music", fallback: "🎵" },
+            { name: "חוג ספורט", key: "img_sport", fallback: "⚽" },
+            { name: "חצר גדולה", key: "img_yard", fallback: "🛝" },
+            { name: "עבודה בקבוצות", key: "img_groups", fallback: "🎨" },
+            { name: "זמן סיפור", key: "img_story", fallback: "📖" },
+            { name: "משחק ויצירה", key: "img_art", fallback: "✂️" },
+            { name: "רובי גוף", key: "img_robot", fallback: "🤖" },
+            { name: "אחר", key: "img_other", fallback: "⭐" }
+        ];
+
+        let currentDay = 'ראשון';
+        let appData = loadAllData();
+
+        function getDayData() {
+            if (!appData[currentDay]) {
+                appData[currentDay] = {
+                    attendance: {},
+                    weather: { key: 'img_sunny', fallback: '☀️', title: 'שמשי / בהיר', desc: 'יום חמים ונעים' },
+                    schedule: [
+                        { name: "מפגש בוקר", key: "img_morning", fallback: "☀️" },
+                        { name: "ארוחת בוקר", key: "img_breakfast", fallback: "🥪" },
+                        { name: "חצר גדולה", key: "img_yard", fallback: "🛝" },
+                        { name: "ארוחת צהריים", key: "img_lunch", fallback: "🍛" }
+                    ]
+                };
+            }
+            return appData[currentDay];
+        }
+
+        function loadAllData() {
+            try {
+                const saved = localStorage.getItem('kindergarten_shaldag_v11_data');
+                if (saved) return JSON.parse(saved);
+            } catch(e) {}
+            return {};
+        }
+
+        function saveAllData() {
+            try {
+                localStorage.setItem('kindergarten_shaldag_v11_data', JSON.stringify(appData));
+                db.collection("kindergarten").doc("main_data").set(appData)
+                  .then(() => { console.log("Synced to cloud!"); })
+                  .catch((e) => { console.error("Sync error:", e); });
+            } catch(e) {}
+        }
+
+        if (!appData.shared) appData.shared = { duties: [], shabbat: ["", ""] };
+        if (!appData.images) appData.images = {};
+
+        const githubImageMap = {
+    'img_bird': 'images/input_file_37.png',
+    'img_lion': 'images/lion2.png',
+    'img_unicorn': 'images/input_file_1.png',
+    'img_sport': 'images/input_file_33.png',
+    'img_sunny': 'images/input_file_3.png',
+    'img_partly': 'images/input_file_4.png',
+    'img_cool': 'images/input_file_8.png',
+    'img_rainy': 'images/input_file_5.png',
+    'img_stormy': 'images/input_file_13.png',
+    'img_breakfast': 'images/input_file_29.png',
+    'img_lunch': 'images/input_file_11.png',
+    'img_menu_schedule': 'images/input_file_34.png',
+    'img_attendance_main': 'images/input_file_16.png',
+    'img_yard_front': 'images/front_yard.png',
+    'img_yard': 'images/input_file_9.png',
+    'img_shabbat': 'images/kabalat_shabat.png',
+};
+        function getImageHtml(key, fallback) {
+            if (appData.images && appData.images[key]) {
+                return `<img src="${appData.images[key]}">`;
+            }
+            if (githubImageMap[key]) {
+                return `<img src="${githubImageMap[key]}">`;
+            }
+            return fallback;
+        }
+
+        function uploadImage(event, key) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    appData.images[key] = e.target.result;
+                    saveAllData();
+                    renderAll();
+                    const preview = document.getElementById('preview-' + key);
+                    if (preview) preview.innerHTML = `<img src="${e.target.result}">`;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        let synthVoices = [];
+        window.speechSynthesis.onvoiceschanged = () => { synthVoices = window.speechSynthesis.getVoices(); };
+        
+        function playBirdGreeting() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                let msg = new SpeechSynthesisUtterance("בוקר טוב, גן שלדג!");
+                msg.lang = 'he-IL';
+                msg.rate = 0.9; msg.pitch = 1.2; 
+                let heVoice = synthVoices.find(v => v.lang.includes('he'));
+                if(heVoice) msg.voice = heVoice;
+                window.speechSynthesis.speak(msg);
+            } else {
+                alert("הדפדפן שלך לא תומך בהקראת קול.");
+            }
+        }
+
+        const daysMap = {'ראשון': 0, 'שני': 1, 'שלישי': 2, 'רביעי': 3, 'חמישי': 4, 'שישי': 5, 'שבת': 6};
+        function getDateForDay(dayName) {
+            const today = new Date();
+            const currentDayIndex = today.getDay();
+            const targetDayIndex = daysMap[dayName] !== undefined ? daysMap[dayName] : 0;
+            const diff = targetDayIndex - currentDayIndex;
+            const targetDate = new Date(today);
+            targetDate.setDate(today.getDate() + diff);
+            const dd = String(targetDate.getDate()).padStart(2, '0');
+            const mm = String(targetDate.getMonth() + 1).padStart(2, '0');
+            const yyyy = targetDate.getFullYear();
+            return `${dd}.${mm}.${yyyy}`;
+        }
+
+        function selectDay(day) {
+            currentDay = day;
+            document.querySelectorAll('.day-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent.includes(day));
+            });
+            const dateStr = getDateForDay(day);
+            document.getElementById('morning-day-text').textContent = `היום יום ${day}, ${dateStr} בגן שלדג`;
+            document.getElementById('header-date-display').textContent = `יום ${day}, ${dateStr}`;
+            renderAll();
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-' + screenId).classList.add('active');
+            window.scrollTo(0, 0);
+            renderAll();
+        }
+
+        
+        function uploadAudio(event, key) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    appData.audio = appData.audio || {};
+                    appData.audio[key] = e.target.result;
+                    saveAllData();
+                    const preview = document.getElementById('preview-' + key);
+                    if (preview) preview.innerHTML = '✅';
+                    alert("קובץ האודיו נטען ושמור בהצלחה!");
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function playBirdGreeting() {
+            appData.audio = appData.audio || {};
+            if (appData.audio['audio_bird']) {
+                const audio = new Audio(appData.audio['audio_bird']);
+                audio.play().catch(e => {
+                    console.log("Audio play error:", e);
+                    alert("לא ניתן לנגן את קובץ האודיו. נסה שוב או בדוק את הפורמט.");
+                });
+                return;
+            }
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                let msg = new SpeechSynthesisUtterance("בוקר טוב, גן שלדג!");
+                msg.lang = 'he-IL';
+                msg.rate = 0.9; 
+                msg.pitch = 1.3; 
+                let heVoice = synthVoices.find(v => v.lang.includes('he') || v.lang.includes('iw'));
+                if(heVoice) msg.voice = heVoice;
+                window.speechSynthesis.speak(msg);
+            } else {
+                alert("הדפדפן שלך לא תומך בהקראת קול. טען קובץ אודיו בהגדרות!");
+            }
+        }
+
+        function renderAll() {
+            document.getElementById('header-bird-icon').innerHTML = getImageHtml('img_bird', '🐦');
+            document.getElementById('menu-icon-attendance').innerHTML = getImageHtml('img_attendance_main', '👧👦');
+            document.getElementById('menu-icon-schedule').innerHTML = getImageHtml('img_menu_schedule', '🥪');
+            
+            renderHomeWeather();
+            renderAttendance();
+            renderDuties();
+            renderShabbat();
+            renderSchedule();
+            
+
+            const keys = ['img_bird', 'img_menu_schedule', 'img_attendance_main', 'img_lion', 'img_unicorn', 'img_sunny', 'img_partly', 'img_rainy', 'img_cool', 'img_stormy', 'img_morning', 'img_garden', 'img_shabbat', 'img_yard_front', 'img_breakfast', 'img_chairs', 'img_free', 'img_lunch', 'img_music', 'img_sport', 'img_yard', 'img_groups', 'img_story', 'img_art', 'img_robot', 'img_other'];
+            keys.forEach(k => {
+                const el = document.getElementById('preview-' + k);
+                if (el && appData.images[k]) {
+                    el.innerHTML = `<img src="${appData.images[k]}">`;
+                }
+            });
+            if (appData.audio && appData.audio['audio_bird']) {
+                const aEl = document.getElementById('preview-audio_bird');
+                if (aEl) aEl.innerHTML = '✅';
+            }
+
+            
+            document.getElementById('w-icon-img_sunny').innerHTML = getImageHtml('img_sunny', '☀️');
+            document.getElementById('w-icon-img_partly').innerHTML = getImageHtml('img_partly', '⛅');
+            document.getElementById('w-icon-img_cool').innerHTML = getImageHtml('img_cool', '🧥');
+            document.getElementById('w-icon-img_rainy').innerHTML = getImageHtml('img_rainy', '☔');
+            document.getElementById('w-icon-img_stormy').innerHTML = getImageHtml('img_stormy', '⚡🚗');
+        }
+
+        function renderHomeWeather() {
+            const dayData = getDayData();
+            const w = dayData.weather;
+            document.getElementById('home-weather-icon').innerHTML = getImageHtml(w.key, w.fallback);
+            document.getElementById('home-weather-text').textContent = w.title;
+            document.getElementById('menu-icon-weather').innerHTML = getImageHtml(w.key, w.fallback);
+        }
+
+        function renderAttendance() {
+            const dayData = getDayData();
+            const grid = document.getElementById('attendance-grid');
+            grid.innerHTML = '';
+            
+            let presentCount = 0;
+            childrenList.forEach(child => {
+                const isPresent = !!dayData.attendance[child.id];
+                if (isPresent) presentCount++;
+
+                const card = document.createElement('div');
+                card.className = `child-card ${isPresent ? 'present' : ''}`;
+                card.onclick = () => toggleAttendance(child.id);
+                card.innerHTML = `
+                    <div class="animal-icon">${getImageHtml(child.type, child.fallback)}</div>
+                    <div class="child-name">${child.name}</div>
+                    <div class="child-status">${isPresent ? 'נוכח/ת בגן 🌟' : ''}</div>
+                `;
+                grid.appendChild(card);
+            });
+            document.getElementById('attendance-count-title').textContent = `הגיעו היום: ${presentCount} מתוך 27`;
+        }
+
+        function toggleAttendance(id) {
+            const dayData = getDayData();
+            dayData.attendance[id] = !dayData.attendance[id];
+            saveAllData();
+            renderAttendance();
+        }
+
+        function resetAttendance() {
+            showModal("איפוס נוכחות", "האם לאפס את סימוני הנוכחות ליום חדש?", () => {
+                getDayData().attendance = {};
+                saveAllData();
+                renderAttendance();
+                closeModal();
+            });
+        }
+
+        function setWeather(type, key, fallback, title, desc) {
+            const dayData = getDayData();
+            dayData.weather = { key, fallback, title, desc };
+            saveAllData();
+            renderHomeWeather();
+            highlightWeatherCard(title);
+            showScreen('home');
+        }
+
+        function highlightWeatherCard(title) {
+            document.querySelectorAll('.weather-card').forEach(card => {
+                card.classList.toggle('selected', card.querySelector('h3').textContent === title);
+            });
+        }
+
+        function renderDuties() {
+            const shared = appData.shared;
+            const selectedGrid = document.getElementById('duties-selected-grid');
+            const poolGrid = document.getElementById('duties-pool-grid');
+            
+            selectedGrid.innerHTML = '';
+            poolGrid.innerHTML = '';
+
+            if (shared.duties.length === 0) {
+                selectedGrid.innerHTML = '<p style="color: #90A4AE; grid-column: 1/-1; text-align: center; padding: 20px;">טרם נבחרו תורנים השבוע. לחץ על ילדים מרשימת הגן למטה.</p>';
+            } else {
+                shared.duties.forEach(id => {
+                    const child = childrenList.find(c => c.id === id);
+                    if (!child) return;
+                    const card = document.createElement('div');
+                    card.className = 'child-card present';
+                    card.onclick = () => removeDuty(id);
+                    card.innerHTML = `
+                        <div class="animal-icon">${getImageHtml(child.type, child.fallback)}</div>
+                        <div class="child-name">${child.name}</div>
+                        <div class="child-status">⭐ תורן/ת</div>
+                    `;
+                    selectedGrid.appendChild(card);
+                });
+            }
+
+            childrenList.forEach(child => {
+                if (shared.duties.includes(child.id)) return;
+                const card = document.createElement('div');
+                card.className = 'child-card';
+                card.onclick = () => addDuty(child.id);
+                card.innerHTML = `
+                    <div class="animal-icon">${getImageHtml(child.type, child.fallback)}</div>
+                    <div class="child-name">${child.name}</div>
+                    <div class="child-status"></div>
+                `;
+                poolGrid.appendChild(card);
+            });
+        }
+
+        function addDuty(id) {
+            if (appData.shared.duties.length >= 6) {
+                alert("ניתן לבחור עד 6 תורנים בלבד!");
+                return;
+            }
+            appData.shared.duties.push(id);
+            saveAllData();
+            renderDuties();
+        }
+
+        function removeDuty(id) {
+            appData.shared.duties = appData.shared.duties.filter(i => i !== id);
+            saveAllData();
+            renderDuties();
+        }
+
+        function confirmResetDuties() {
+            showModal("איפוס תורנים", "האם לאפס את רשימת התורנים לשבוע חדש?", () => {
+                appData.shared.duties = [];
+                saveAllData();
+                renderDuties();
+                closeModal();
+            });
+        }
+
+        function renderShabbat() {
+            const shared = appData.shared;
+            for (let i = 0; i < 2; i++) {
+                const slot = document.getElementById(`shabbat-slot-${i}`);
+                const selectedId = shared.shabbat[i];
+                if (selectedId) {
+                    const child = childrenList.find(c => c.id === selectedId);
+                    slot.className = 'shabbat-slot filled';
+                    slot.innerHTML = `
+                        <span style="font-size: 16px; color: var(--secondary); font-weight: bold;">מקבל שבת ${i+1} ⭐</span>
+                        <div class="animal-img-wrapper">${getImageHtml(child.type, child.fallback)}</div>
+                        <div style="font-size: 26px; font-weight: bold; color: #37474F; margin-top: 10px;">${child.name}</div>
+                        <div style="font-size: 20px; color: #E65100; font-weight: bold;">🕯️ שבת שלום ומבורך! 🕯️</div>
+                        <button class="action-btn" onclick="removeShabbat(${i})" style="background: #E53935; font-size: 14px; padding: 6px 14px; margin-top:10px;">הסר בחירה</button>
+                    `;
+                } else {
+                    slot.className = 'shabbat-slot';
+                    slot.innerHTML = `
+                        <div style="font-size: 50px;">👑</div>
+                        <span style="font-size: 18px; color: #78909C; font-weight: bold;">מקבל שבת ${i+1}</span>
+                        <div class="autocomplete-container" id="ac-container-${i}">
+                            <input type="text" class="autocomplete-input" id="ac-input-${i}" placeholder="הקלידו שם ילד/ה..." oninput="handleAutocomplete(${i}, this.value)" onfocus="handleAutocomplete(${i}, this.value)">
+                            <div class="autocomplete-dropdown" id="ac-dropdown-${i}"></div>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function handleAutocomplete(slotIndex, query) {
+            const dropdown = document.getElementById(`ac-dropdown-${slotIndex}`);
+            dropdown.innerHTML = '';
+            const filtered = childrenList.filter(c => 
+                c.name.includes(query) && !appData.shared.shabbat.includes(c.id)
+            );
+
+            if (filtered.length === 0) {
+                dropdown.style.display = 'none';
+                return;
+            }
+
+            filtered.forEach(child => {
+                const item = document.createElement('div');
+                item.className = 'autocomplete-item';
+                item.innerHTML = `<span>${child.name}</span> <span style="font-size:14px;">${child.fallback}</span>`;
+                item.onclick = () => selectShabbat(slotIndex, child.id);
+                dropdown.appendChild(item);
+            });
+            dropdown.style.display = 'block';
+        }
+
+        function selectShabbat(slotIndex, childId) {
+            appData.shared.shabbat[slotIndex] = childId;
+            saveAllData();
+            renderShabbat();
+        }
+
+        function removeShabbat(slotIndex) {
+            appData.shared.shabbat[slotIndex] = "";
+            saveAllData();
+            renderShabbat();
+        }
+
+        function confirmResetShabbat() {
+            showModal("איפוס מקבלי שבת", "האם לאפס את מקבלי השבת לשבוע חדש?", () => {
+                appData.shared.shabbat = ["", ""];
+                saveAllData();
+                renderShabbat();
+                closeModal();
+            });
+        }
+
+        let dragSrcIndex = null;
+        let activePickerTarget = null;
+
+        function renderSchedule() {
+            const dayData = getDayData();
+            const container = document.getElementById('schedule-list-container');
+            container.innerHTML = '';
+
+            dayData.schedule.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'schedule-item';
+                div.draggable = true;
+                
+                div.addEventListener('dragstart', (e) => {
+                    dragSrcIndex = index;
+                    div.classList.add('dragging');
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/html', div.innerHTML);
+                });
+                
+                div.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    return false;
+                });
+                
+                div.addEventListener('dragenter', (e) => { div.style.borderColor = 'var(--primary)'; });
+                div.addEventListener('dragleave', (e) => { div.style.borderColor = '#CFD8DC'; });
+                
+                div.addEventListener('drop', (e) => {
+                    e.stopPropagation();
+                    div.style.borderColor = '#CFD8DC';
+                    if (dragSrcIndex !== index && dragSrcIndex !== null) {
+                        const schedule = dayData.schedule;
+                        const draggedItem = schedule.splice(dragSrcIndex, 1)[0];
+                        schedule.splice(index, 0, draggedItem);
+                        saveAllData();
+                        renderSchedule();
+                    }
+                    return false;
+                });
+                
+                div.addEventListener('dragend', (e) => { div.classList.remove('dragging'); dragSrcIndex = null; });
+
+                div.innerHTML = `
+                    <div class="schedule-info">
+                        <div style="font-size: 20px; color:#B0BEC5; cursor: grab; padding-left: 10px;">☰</div>
+                        <div class="schedule-icon">${getImageHtml(item.key, item.fallback)}</div>
+                        <div class="schedule-title">
+                            ${item.name === 'אחר' ? `<input type="text" value="${item.customName || ''}" placeholder="הקלידו שם פעילות..." oninput="updateCustomActivity(${index}, this.value)" style="font-size: 18px; padding: 6px 12px; border: 2px solid #B0BEC5; border-radius: 10px; width:150px;">` : item.name}
+                        </div>
+                    </div>
+                    <div class="schedule-controls">
+                        <button class="sched-btn" onclick="openActivityPicker(${index})">🔄 החלף</button>
+                        <button class="sched-btn" onclick="removeSchedule(${index})" style="background: #FFCDD2; color: #C62828;">✕ הסר</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function updateCustomActivity(index, val) {
+            const dayData = getDayData();
+            dayData.schedule[index].customName = val;
+            saveAllData();
+        }
+
+        function removeSchedule(index) {
+            const dayData = getDayData();
+            dayData.schedule.splice(index, 1);
+            saveAllData();
+            renderSchedule();
+        }
+
+        function openActivityPicker(target) {
+            activePickerTarget = target;
+            const grid = document.getElementById('activity-grid-container');
+            grid.innerHTML = '';
+            
+            activityBank.forEach(act => {
+                const card = document.createElement('div');
+                card.className = 'activity-card';
+                card.onclick = () => selectActivityFromPicker(act.name);
+                card.innerHTML = `
+                    <div class="act-icon">${getImageHtml(act.key, act.fallback)}</div>
+                    <div class="act-name">${act.name}</div>
+                `;
+                grid.appendChild(card);
+            });
+            
+            document.getElementById('activity-modal').style.display = 'flex';
+        }
+
+        function closeActivityPicker() {
+            document.getElementById('activity-modal').style.display = 'none';
+            activePickerTarget = null;
+        }
+
+        function selectActivityFromPicker(actName) {
+            const act = activityBank.find(a => a.name === actName);
+            const dayData = getDayData();
+            
+            if (activePickerTarget === 'add') {
+                dayData.schedule.push({ name: act.name, key: act.key, fallback: act.fallback, customName: act.name === 'אחר' ? '' : undefined });
+            } else if (typeof activePickerTarget === 'number') {
+                dayData.schedule[activePickerTarget] = { name: act.name, key: act.key, fallback: act.fallback, customName: act.name === 'אחר' ? '' : undefined };
+            }
+            
+            saveAllData();
+            renderSchedule();
+            closeActivityPicker();
+        }
+
+        let modalCallback = null;
+        function showModal(title, desc, callback) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-desc').textContent = desc;
+            modalCallback = callback;
+            document.getElementById('custom-modal').style.display = 'flex';
+        }
+        function closeModal() {
+            document.getElementById('custom-modal').style.display = 'none';
+            modalCallback = null;
+        }
+        function modalConfirm() {
+            if (modalCallback) modalCallback();
+        }
+
+        
+        let currentArchiveType = 'shabbat';
+        function openArchiveModal(type) {
+            currentArchiveType = type;
+            document.getElementById('archive-modal-title').textContent = type === 'shabbat' ? '📚 ארכיון מקבלי שבת' : '📚 ארכיון תורנים שבועיים';
+            renderArchiveContent();
+            document.getElementById('archive-modal').style.display = 'flex';
+        }
+
+        function closeArchiveModal() {
+            document.getElementById('archive-modal').style.display = 'none';
+        }
+
+        function renderArchiveContent() {
+            appData.archive = appData.archive || { shabbat: [], duties: [] };
+            const list = appData.archive[currentArchiveType] || [];
+            const container = document.getElementById('archive-content');
+            container.innerHTML = '';
+
+            if (list.length === 0) {
+                container.innerHTML = '<p style="color: #90A4AE; text-align: center; padding: 20px;">אין עדיין שבועות שמורים בארכיון. לחץ על כפתור השמירה כדי להוסיף את השבוע הנוכחי.</p>';
+                return;
+            }
+
+            list.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.style.cssText = "background: #F5F5F5; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 2px solid #E0E0E0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;";
+                div.innerHTML = `<div><div style="font-weight: bold; color: var(--secondary); margin-bottom: 5px;">שבוע: ${item.dateStr}</div>
+                                 <div style="color: #37474F;">${item.namesFormatted}</div></div>
+                                 <button class="action-btn" onclick="deleteFromArchive('${currentArchiveType}', ${index})" style="background: #E53935; font-size: 14px; padding: 6px 12px;">מחק</button>`;
+                container.appendChild(div);
+            });
+        }
+
+        function deleteFromArchive(type, index) {
+            if (confirm("האם למחוק פריט זה מהארכיון?")) {
+                appData.archive[type].splice(index, 1);
+                saveAllData();
+                renderArchiveContent();
+            }
+        }
+
+        function saveCurrentToArchiveExplicit(type) {
+            appData.archive = appData.archive || { shabbat: [], duties: [] };
+            const dateStr = new Date().toLocaleDateString('he-IL');
+            
+            if (type === 'shabbat') {
+                const names = appData.shared.shabbat.map(id => {
+                    const c = childrenList.find(child => child.id === id);
+                    return c ? c.name : null;
+                }).filter(Boolean);
+
+                if (names.length === 0) {
+                    alert("אין מקבלי שבת נבחרים בשבוע הנוכחי לשמירה!");
+                    return;
+                }
+                appData.archive.shabbat.unshift({ dateStr: dateStr, namesFormatted: "🕯️ מקבלי שבת: " + names.join(' ו- ') });
+            } else {
+                const names = appData.shared.duties.map(id => {
+                    const c = childrenList.find(child => child.id === id);
+                    return c ? c.name : null;
+                }).filter(Boolean);
+
+                if (names.length === 0) {
+                    alert("אין תורנים נבחרים בשבוע הנוכחי לשמירה!");
+                    return;
+                }
+                appData.archive.duties.unshift({ dateStr: dateStr, namesFormatted: "⭐ תורנים: " + names.join(', ') });
+            }
+
+            saveAllData();
+            alert("השבוע נשמר בהצלחה לארכיון!");
+        }
+
+        window.onload = () => {
+            const dayNames = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+            let todayName = dayNames[new Date().getDay()];
+            if (todayName === 'שבת') todayName = 'שישי';
+            selectDay(todayName);
+        };
+    </script>
+</body>
+</html>
