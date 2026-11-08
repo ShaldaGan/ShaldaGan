@@ -920,7 +920,7 @@
         
         function playBirdGreeting() {
         // משיכת קובץ הסאונד מתיקיית אודיו בגיטהאב
-        const audio = new Audio('audio/shaldag.mp3');
+       const audio = new Audio('./audio/shaldag.mp3');
         audio.play().catch(e => {
             console.log("Audio play error:", e);
             // הקראה אוטומטית כגיבוי אם הקובץ לא נטען עקב בעיית רשת
