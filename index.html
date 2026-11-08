@@ -917,28 +917,20 @@
 
         let synthVoices = [];
         window.speechSynthesis.onvoiceschanged = () => { synthVoices = window.speechSynthesis.getVoices(); };
-
+        
         function playBirdGreeting() {
-            // נסיון לנגן את קובץ השמע מהגיטהאב
-            const audio = new Audio('audio/shaldag.mp3');
-            audio.play().catch(e => {
-                console.log("Audio play error:", e);
-                // במקרה של שגיאה או אם הקובץ לא נמצא, נפעיל את ההקראה האוטומטית כגיבוי
-                if ('speechSynthesis' in window) {
-                    window.speechSynthesis.cancel();
-                    let msg = new SpeechSynthesisUtterance("בוקר טוב, גן שלדג!");
-                    msg.lang = 'he-IL';
-                    msg.rate = 0.9; 
-                    msg.pitch = 1.3; 
-                    let heVoice = synthVoices.find(v => v.lang.includes('he') || v.lang.includes('iw'));
-                    if(heVoice) msg.voice = heVoice;
-                    window.speechSynthesis.speak(msg);
-                }
-            });
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                let msg = new SpeechSynthesisUtterance("בוקר טוב, גן שלדג!");
+                msg.lang = 'he-IL';
+                msg.rate = 0.9; msg.pitch = 1.2; 
+                let heVoice = synthVoices.find(v => v.lang.includes('he'));
+                if(heVoice) msg.voice = heVoice;
+                window.speechSynthesis.speak(msg);
+            } else {
+                alert("הדפדפן שלך לא תומך בהקראת קול.");
+            }
         }
-
-        
-        
 
         const daysMap = {'ראשון': 0, 'שני': 1, 'שלישי': 2, 'רביעי': 3, 'חמישי': 4, 'שישי': 5, 'שבת': 6};
         function getDateForDay(dayName) {
@@ -989,7 +981,16 @@
             }
         }
 
-        
+        function playBirdGreeting() {
+            appData.audio = appData.audio || {};
+            if (appData.audio['audio_bird']) {
+                const audio = new Audio(appData.audio['audio_bird']);
+                audio.play().catch(e => {
+                    console.log("Audio play error:", e);
+                    alert("לא ניתן לנגן את קובץ האודיו. נסה שוב או בדוק את הפורמט.");
+                });
+                return;
+            }
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
                 let msg = new SpeechSynthesisUtterance("בוקר טוב, גן שלדג!");
