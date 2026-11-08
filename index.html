@@ -919,18 +919,23 @@
         window.speechSynthesis.onvoiceschanged = () => { synthVoices = window.speechSynthesis.getVoices(); };
         
         function playBirdGreeting() {
+        // משיכת קובץ הסאונד מתיקיית אודיו בגיטהאב
+        const audio = new Audio('audio/shaldag.mp3');
+        audio.play().catch(e => {
+            console.log("Audio play error:", e);
+            // הקראה אוטומטית כגיבוי אם הקובץ לא נטען עקב בעיית רשת
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
                 let msg = new SpeechSynthesisUtterance("בוקר טוב, גן שלדג!");
                 msg.lang = 'he-IL';
-                msg.rate = 0.9; msg.pitch = 1.2; 
-                let heVoice = synthVoices.find(v => v.lang.includes('he'));
+                msg.rate = 0.9; 
+                msg.pitch = 1.3; 
+                let heVoice = synthVoices.find(v => v.lang.includes('he') || v.lang.includes('iw'));
                 if(heVoice) msg.voice = heVoice;
                 window.speechSynthesis.speak(msg);
-            } else {
-                alert("הדפדפן שלך לא תומך בהקראת קול.");
             }
-        }
+        });
+    }
 
         const daysMap = {'ראשון': 0, 'שני': 1, 'שלישי': 2, 'רביעי': 3, 'חמישי': 4, 'שישי': 5, 'שבת': 6};
         function getDateForDay(dayName) {
