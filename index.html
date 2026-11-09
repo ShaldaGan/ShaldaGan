@@ -424,15 +424,16 @@
         .activity-card .act-icon { font-size: 36px; margin-bottom: 8px; width:50px; height:50px; margin: 0 auto; display:flex; align-items:center; justify-content:center; overflow:hidden;}
         .activity-card .act-icon img { width: 100%; height: 100%; object-fit: contain; }
         .activity-card .act-name { font-size: 16px; font-weight: bold; color: #37474F; margin-top:5px;}
-	
-	/* סדר יום עמוד ראשי */
+
+        
+        /* סדר יום עמוד ראשי */
         .home-schedule-wrapper { margin-top: 20px; }
         .home-schedule-title { font-size: 20px; font-weight: bold; color: var(--secondary); margin-bottom: 10px; }
         .home-schedule-track { display: flex; gap: 15px; overflow-x: auto; padding: 10px 5px; }
         .home-schedule-item { background: white; min-width: 120px; border-radius: 16px; padding: 15px; text-align: center; box-shadow: var(--shadow); border: 2px solid #E0F2F1; cursor: pointer; transition: 0.2s; }
         .home-schedule-item:hover { transform: translateY(-5px); border-color: var(--secondary); }
         .home-schedule-item .act-icon { font-size: 36px; margin-bottom: 5px; height: 50px; display: flex; align-items: center; justify-content: center; }
-
+        
         /* Modals */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; }
         .modal-box { background: white; padding: 30px; border-radius: var(--radius); box-shadow: var(--shadow); text-align: center; max-width: 600px; width: 95%; display: flex; flex-direction: column; gap: 20px; }
@@ -539,19 +540,21 @@
                     <div class="menu-icon" id="menu-icon-duties">🧹</div>
                     <h3>תורנים</h3>
                 </div>
+                
                 <div class="menu-card" onclick="showScreen('shabbat')">
                     <div class="menu-icon" id="menu-icon-shabbat">🍷</div>
                     <h3>מקבלי השבת</h3>
-		<div class="menu-card" onclick="showScreen('secretbox')">
+                </div>
+                <div class="menu-card" onclick="showScreen('secretbox')">
                     <div class="menu-icon" id="menu-icon-secretbox">🎁</div>
                     <h3>קופסת סוד</h3>
                 </div>
-		<div class="home-schedule-wrapper">
+
+            </div>
+            
+            <div class="home-schedule-wrapper">
                 <div class="home-schedule-title">סדר היום שלנו</div>
                 <div class="home-schedule-track" id="home-schedule-track"></div>
-            </div>
-
-                </div>
             </div>
         </div>
 
@@ -607,7 +610,9 @@
                 </div>
             </div>
         </div>
-			<!-- SECRET BOX SCREEN -->
+
+        
+        <!-- SECRET BOX SCREEN -->
         <div id="screen-secretbox" class="screen">
             <div class="screen-header">
                 <button class="nav-btn home" onclick="showScreen('home')">🏠 בית</button>
@@ -882,6 +887,8 @@
             if (!appData[currentDay]) {
                 appData[currentDay] = {
                     attendance: {},
+                    duties: [],
+                    secretBox: null,
                     weather: { key: 'img_sunny', fallback: '☀️', title: 'שמשי / בהיר', desc: 'יום חמים ונעים' },
                     schedule: [
                         { name: "מפגש בוקר", key: "img_morning", fallback: "☀️" },
@@ -891,6 +898,7 @@
                     ]
                 };
             }
+            if (!appData[currentDay].duties) appData[currentDay].duties = [];
             return appData[currentDay];
         }
 
@@ -930,8 +938,8 @@
     'img_attendance_main': 'images/input_file_16.png',
     'img_yard_front': 'images/front_yard.png',
     'img_yard': 'images/input_file_9.png',
-    'img_shabbat': 'images/kabalat_shabat.png',	
-	'img_secretbox': 'images/secret_box.png',
+    'img_shabbat': 'images/kabalat_shabat.png',
+    'img_secretbox': 'images/secret_box.png',
 };
         function getImageHtml(key, fallback) {
             if (appData.images && appData.images[key]) {
@@ -1057,6 +1065,9 @@
             document.getElementById('header-bird-icon').innerHTML = getImageHtml('img_bird', '🐦');
             document.getElementById('menu-icon-attendance').innerHTML = getImageHtml('img_attendance_main', '👧👦');
             document.getElementById('menu-icon-schedule').innerHTML = getImageHtml('img_menu_schedule', '🥪');
+            document.getElementById('menu-icon-secretbox').innerHTML = getImageHtml('img_secretbox', '🎁');
+            renderSecretBox();
+            renderHomeSchedule();
             
             renderHomeWeather();
             renderAttendance();
@@ -1416,7 +1427,11 @@
         let currentArchiveType = 'shabbat';
         function openArchiveModal(type) {
             currentArchiveType = type;
-            document.getElementById('archive-modal-title').textContent = type === 'shabbat' ? '📚 ארכיון מקבלי שבת' : '📚 ארכיון תורנים שבועיים';
+            let title = '📚 ארכיון';
+            if(type === 'shabbat') title = '📚 ארכיון מקבלי שבת';
+            if(type === 'duties') title = '📚 ארכיון תורנים יומיים';
+            if(type === 'secretbox') title = '📚 ארכיון קופסת סוד';
+            document.getElementById('archive-modal-title').textContent = title;
             renderArchiveContent();
             document.getElementById('archive-modal').style.display = 'flex';
         }
@@ -1451,43 +1466,31 @@
                 appData.archive[type].splice(index, 1);
                 saveAllData();
                 renderArchiveContent();
-
-		document.getElementById('menu-icon-secretbox').innerHTML = getImageHtml('img_secretbox', '🎁');
-            renderSecretBox();
-            renderHomeSchedule();
             }
         }
 
         function saveCurrentToArchiveExplicit(type) {
-            appData.archive = appData.archive || { shabbat: [], duties: [] };
+            appData.archive = appData.archive || { shabbat: [], duties: [], secretbox: [] };
             const dateStr = new Date().toLocaleDateString('he-IL');
             
             if (type === 'shabbat') {
                 const names = appData.shared.shabbat.map(id => {
-                    const c = childrenList.find(child => child.id === id);
-                    return c ? c.name : null;
+                    const c = childrenList.find(child => child.id === id); return c ? c.name : null;
                 }).filter(Boolean);
-
-                if (names.length === 0) {
-                    alert("אין מקבלי שבת נבחרים בשבוע הנוכחי לשמירה!");
-                    return;
-                }
+                if (names.length === 0) { alert("אין מקבלי שבת נבחרים!"); return; }
                 appData.archive.shabbat.unshift({ dateStr: dateStr, namesFormatted: "🕯️ מקבלי שבת: " + names.join(' ו- ') });
-            } else {
-                const names = appData.shared.duties.map(id => {
-                    const c = childrenList.find(child => child.id === id);
-                    return c ? c.name : null;
+            } else if (type === 'duties') {
+                const dutiesList = getDayData().duties || [];
+                const names = dutiesList.map(id => {
+                    const c = childrenList.find(child => child.id === id); return c ? c.name : null;
                 }).filter(Boolean);
-
-                if (names.length === 0) {
-                    alert("אין תורנים נבחרים בשבוע הנוכחי לשמירה!");
-                    return;
-                }
+                if (names.length === 0) { alert("אין תורנים נבחרים היום!"); return; }
                 appData.archive.duties.unshift({ dateStr: dateStr, namesFormatted: "⭐ תורנים: " + names.join(', ') });
+            } else if (type === 'secretbox') {
+                alert("שמירת קופסת סוד מתבצעת ישירות מכפתור השמירה במסך (הדורש הקלדת מילה).");
+                return;
             }
-
-            saveAllData();
-            alert("השבוע נשמר בהצלחה לארכיון!");
+            saveAllData(); alert("נשמר בהצלחה לארכיון!");
         }
 
         window.onload = () => {
