@@ -1240,8 +1240,11 @@
             if (schedule.length === 0) { track.innerHTML = '<span style="color:#90A4AE;">אין פעילויות.</span>'; return; }
             schedule.forEach(item => {
                 const div = document.createElement('div'); div.className = 'home-schedule-item'; div.onclick = () => showScreen('schedule');
-                div.innerHTML = `<div class="act-icon">${getImageHtml(item.key, item.fallback)}</div><div style="font-weight:bold; color:#37474F; font-size:16px;">${item.name === 'אחר' ? (item.customName || 'פעילות') : item.name}</div>`;
+                // הכנסת טקסט נקי בלבד, ללא שום תמונה או לוגו:
+                div.innerHTML = `<div style="font-weight:bold; color:#37474F; font-size:18px;">${item.name === 'אחר' ? (item.customName || 'פעילות') : item.name}</div>`;
                 track.appendChild(div);
+            });
+        }
             });
         }
 
