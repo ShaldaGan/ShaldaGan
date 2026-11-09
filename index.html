@@ -424,6 +424,14 @@
         .activity-card .act-icon { font-size: 36px; margin-bottom: 8px; width:50px; height:50px; margin: 0 auto; display:flex; align-items:center; justify-content:center; overflow:hidden;}
         .activity-card .act-icon img { width: 100%; height: 100%; object-fit: contain; }
         .activity-card .act-name { font-size: 16px; font-weight: bold; color: #37474F; margin-top:5px;}
+	
+	/* סדר יום עמוד ראשי */
+        .home-schedule-wrapper { margin-top: 20px; }
+        .home-schedule-title { font-size: 20px; font-weight: bold; color: var(--secondary); margin-bottom: 10px; }
+        .home-schedule-track { display: flex; gap: 15px; overflow-x: auto; padding: 10px 5px; }
+        .home-schedule-item { background: white; min-width: 120px; border-radius: 16px; padding: 15px; text-align: center; box-shadow: var(--shadow); border: 2px solid #E0F2F1; cursor: pointer; transition: 0.2s; }
+        .home-schedule-item:hover { transform: translateY(-5px); border-color: var(--secondary); }
+        .home-schedule-item .act-icon { font-size: 36px; margin-bottom: 5px; height: 50px; display: flex; align-items: center; justify-content: center; }
 
         /* Modals */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; }
@@ -534,6 +542,15 @@
                 <div class="menu-card" onclick="showScreen('shabbat')">
                     <div class="menu-icon" id="menu-icon-shabbat">🍷</div>
                     <h3>מקבלי השבת</h3>
+		<div class="menu-card" onclick="showScreen('secretbox')">
+                    <div class="menu-icon" id="menu-icon-secretbox">🎁</div>
+                    <h3>קופסת סוד</h3>
+                </div>
+		<div class="home-schedule-wrapper">
+                <div class="home-schedule-title">סדר היום שלנו</div>
+                <div class="home-schedule-track" id="home-schedule-track"></div>
+            </div>
+
                 </div>
             </div>
         </div>
@@ -587,6 +604,31 @@
                     <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">משחק ויצירה</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_art')">טען תמונה</label></div><div class="settings-preview" id="preview-img_art">✂️</div></div>
                     <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">רובי גוף</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_robot')">טען תמונה</label></div><div class="settings-preview" id="preview-img_robot">🤖</div></div>
                     <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">אחר (מותאם אישית)</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_other')">טען תמונה</label></div><div class="settings-preview" id="preview-img_other">⭐</div></div>
+                </div>
+            </div>
+        </div>
+			<!-- SECRET BOX SCREEN -->
+        <div id="screen-secretbox" class="screen">
+            <div class="screen-header">
+                <button class="nav-btn home" onclick="showScreen('home')">🏠 בית</button>
+                <div class="screen-title">קופסת סוד</div>
+                <button class="nav-btn" onclick="showScreen('home')">➜ חזור</button>
+            </div>
+            <div class="duties-layout">
+                <div class="section-box">
+                    <h3>
+                        <span>🎁 ילד/ת הסוד (אחד ביום)</span>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <button class="action-btn" onclick="promptSecretWord()" style="font-size: 14px; padding: 6px 12px; background: #2E7D32;">💾 שמור לארכיון</button>
+                            <button class="action-btn" onclick="openArchiveModal('secretbox')" style="font-size: 14px; padding: 6px 12px; background: var(--secondary);">📚 ארכיון</button>
+                            <button class="action-btn" onclick="confirmResetSecretBox()" style="font-size: 14px; padding: 6px 12px;">איפוס</button>
+                        </div>
+                    </h3>
+                    <div class="duties-selected-grid" id="secretbox-selected-grid"></div>
+                </div>
+                <div class="section-box">
+                    <h3>כל ילדי הגן (לחץ לבחירה)</h3>
+                    <div class="attendance-grid" id="secretbox-pool-grid"></div>
                 </div>
             </div>
         </div>
@@ -888,7 +930,8 @@
     'img_attendance_main': 'images/input_file_16.png',
     'img_yard_front': 'images/front_yard.png',
     'img_yard': 'images/input_file_9.png',
-    'img_shabbat': 'images/kabalat_shabat.png',
+    'img_shabbat': 'images/kabalat_shabat.png',	
+	'img_secretbox': 'images/secret_box.png',
 };
         function getImageHtml(key, fallback) {
             if (appData.images && appData.images[key]) {
@@ -1408,6 +1451,10 @@
                 appData.archive[type].splice(index, 1);
                 saveAllData();
                 renderArchiveContent();
+
+		document.getElementById('menu-icon-secretbox').innerHTML = getImageHtml('img_secretbox', '🎁');
+            renderSecretBox();
+            renderHomeSchedule();
             }
         }
 
