@@ -425,15 +425,14 @@
         .activity-card .act-icon img { width: 100%; height: 100%; object-fit: contain; }
         .activity-card .act-name { font-size: 16px; font-weight: bold; color: #37474F; margin-top:5px;}
 
-        
         /* סדר יום עמוד ראשי */
         .home-schedule-wrapper { margin-top: 20px; }
         .home-schedule-title { font-size: 20px; font-weight: bold; color: var(--secondary); margin-bottom: 10px; }
         .home-schedule-track { display: flex; gap: 15px; overflow-x: auto; padding: 10px 5px; }
-        .home-schedule-item { background: white; min-width: 120px; border-radius: 16px; padding: 15px; text-align: center; box-shadow: var(--shadow); border: 2px solid #E0F2F1; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;}
+        .home-schedule-item { background: white; min-width: 120px; border-radius: 16px; padding: 15px; text-align: center; box-shadow: var(--shadow); border: 2px solid #E0F2F1; cursor: pointer; transition: 0.2s; }
         .home-schedule-item:hover { transform: translateY(-5px); border-color: var(--secondary); }
-        /* Removed .act-icon styling as we won't use it in the home screen */
-        
+        .home-schedule-item .act-icon { font-size: 36px; margin-bottom: 5px; height: 50px; display: flex; align-items: center; justify-content: center; }
+
         /* Modals */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; }
         .modal-box { background: white; padding: 30px; border-radius: var(--radius); box-shadow: var(--shadow); text-align: center; max-width: 600px; width: 95%; display: flex; flex-direction: column; gap: 20px; }
@@ -540,7 +539,6 @@
                     <div class="menu-icon" id="menu-icon-duties">🧹</div>
                     <h3>תורנים</h3>
                 </div>
-                
                 <div class="menu-card" onclick="showScreen('shabbat')">
                     <div class="menu-icon" id="menu-icon-shabbat">🍷</div>
                     <h3>מקבלי השבת</h3>
@@ -549,7 +547,6 @@
                     <div class="menu-icon" id="menu-icon-secretbox">🎁</div>
                     <h3>קופסת סוד</h3>
                 </div>
-
             </div>
             
             <div class="home-schedule-wrapper">
@@ -569,7 +566,6 @@
                 <p style="font-size: 18px; color: #546E7A; margin-bottom: 20px;">
                     כאן תוכלו לטעון את התמונות האמיתיות. האפליקציה תשמור אותן ותשתמש בהן במקום באייקונים הרגילים!
                 </p>
-                
                 <h4 style="margin-top:20px; margin-bottom:10px; color:#26A69A;">דמויות כלליות</h4>
                 <div class="settings-grid">
                     <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">לוגו שלדג</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_bird')">טען תמונה</label></div><div class="settings-preview" id="preview-img_bird">🐦</div></div>
@@ -607,33 +603,6 @@
                     <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">משחק ויצירה</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_art')">טען תמונה</label></div><div class="settings-preview" id="preview-img_art">✂️</div></div>
                     <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">רובי גוף</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_robot')">טען תמונה</label></div><div class="settings-preview" id="preview-img_robot">🤖</div></div>
                     <div class="settings-card"><div><div style="font-weight:bold; font-size:18px; margin-bottom:5px;">אחר (מותאם אישית)</div><label><input type="file" accept="image/*" onchange="uploadImage(event, 'img_other')">טען תמונה</label></div><div class="settings-preview" id="preview-img_other">⭐</div></div>
-                </div>
-            </div>
-        </div>
-
-        
-        <!-- SECRET BOX SCREEN -->
-        <div id="screen-secretbox" class="screen">
-            <div class="screen-header">
-                <button class="nav-btn home" onclick="showScreen('home')">🏠 בית</button>
-                <div class="screen-title">קופסת סוד</div>
-                <button class="nav-btn" onclick="showScreen('home')">➜ חזור</button>
-            </div>
-            <div class="duties-layout">
-                <div class="section-box">
-                    <h3>
-                        <span>🎁 ילד/ת הסוד (אחד ביום)</span>
-                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                            <button class="action-btn" onclick="promptSecretWord()" style="font-size: 14px; padding: 6px 12px; background: #2E7D32;">💾 שמור לארכיון</button>
-                            <button class="action-btn" onclick="openArchiveModal('secretbox')" style="font-size: 14px; padding: 6px 12px; background: var(--secondary);">📚 ארכיון</button>
-                            <button class="action-btn" onclick="confirmResetSecretBox()" style="font-size: 14px; padding: 6px 12px;">איפוס</button>
-                        </div>
-                    </h3>
-                    <div class="duties-selected-grid" id="secretbox-selected-grid"></div>
-                </div>
-                <div class="section-box">
-                    <h3>כל ילדי הגן (לחץ לבחירה)</h3>
-                    <div class="attendance-grid" id="secretbox-pool-grid"></div>
                 </div>
             </div>
         </div>
@@ -694,13 +663,13 @@
         <div id="screen-duties" class="screen">
             <div class="screen-header">
                 <button class="nav-btn home" onclick="showScreen('home')">🏠 בית</button>
-                <div class="screen-title">תורנות שבועית</div>
+                <div class="screen-title">תורנות יומית</div>
                 <button class="nav-btn" onclick="showScreen('home')">➜ חזור</button>
             </div>
             <div class="duties-layout">
                 <div class="section-box">
                     <h3>
-                        <span>⭐ תורני השבוע (עד 6 ילדים)</span>
+                        <span>⭐ תורני היום (עד 6 ילדים)</span>
                         <div style="display:flex; gap:8px; flex-wrap:wrap;">
                             <button class="action-btn" onclick="saveCurrentToArchiveExplicit('duties')" style="font-size: 14px; padding: 6px 12px; background: #2E7D32;">💾 שמור לארכיון</button>
                             <button class="action-btn" onclick="openArchiveModal('duties')" style="font-size: 14px; padding: 6px 12px; background: var(--secondary);">📚 ארכיון תורנים</button>
@@ -712,6 +681,32 @@
                 <div class="section-box">
                     <h3>כל ילדי הגן (לחץ להעלאה לתורנים)</h3>
                     <div class="attendance-grid" id="duties-pool-grid"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECRET BOX SCREEN -->
+        <div id="screen-secretbox" class="screen">
+            <div class="screen-header">
+                <button class="nav-btn home" onclick="showScreen('home')">🏠 בית</button>
+                <div class="screen-title">קופסת סוד</div>
+                <button class="nav-btn" onclick="showScreen('home')">➜ חזור</button>
+            </div>
+            <div class="duties-layout">
+                <div class="section-box">
+                    <h3>
+                        <span>🎁 ילד/ת הסוד (אחד ביום)</span>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <button class="action-btn" onclick="promptSecretWord()" style="font-size: 14px; padding: 6px 12px; background: #2E7D32;">💾 שמור לארכיון</button>
+                            <button class="action-btn" onclick="openArchiveModal('secretbox')" style="font-size: 14px; padding: 6px 12px; background: var(--secondary);">📚 ארכיון</button>
+                            <button class="action-btn" onclick="confirmResetSecretBox()" style="font-size: 14px; padding: 6px 12px;">איפוס</button>
+                        </div>
+                    </h3>
+                    <div class="duties-selected-grid" id="secretbox-selected-grid"></div>
+                </div>
+                <div class="section-box">
+                    <h3>כל ילדי הגן (לחץ לבחירה)</h3>
+                    <div class="attendance-grid" id="secretbox-pool-grid"></div>
                 </div>
             </div>
         </div>
@@ -795,7 +790,6 @@
     </div>
 
     <script>
-
         const firebaseConfig = {
             apiKey: "AIzaSyDGI0FWlpVRhqwqMIBQnaj2mvpFP7l2eGI",
             authDomain: "gan-shaldag.firebaseapp.com",
@@ -815,7 +809,7 @@
                 const cloudData = doc.data();
                 if (JSON.stringify(cloudData) !== JSON.stringify(appData)) {
                     appData = cloudData;
-                    if (!appData.shared) appData.shared = { duties: [], shabbat: ["", ""] };
+                    if (!appData.shared) appData.shared = { shabbat: ["", ""] };
                     if (!appData.images) appData.images = {};
                     localStorage.setItem('kindergarten_shaldag_v11_data', JSON.stringify(appData));
                     if (typeof renderAll === 'function') {
@@ -825,11 +819,10 @@
             }
             if (isFirstLoad) {
                 isFirstLoad = false;
-                renderAll(); // Ensure first render after fetching cloud data
+                renderAll();
             }
         });
 
-        // Children list
         const childrenList = [
             { id: 1, name: "אדם", type: "img_lion", fallback: "🦁" },
             { id: 2, name: "איילון", type: "img_lion", fallback: "🦁" },
@@ -860,7 +853,6 @@
             { id: 27, name: "שי", type: "img_unicorn", fallback: "🦄" }
         ];
 
-        // Schedule Activity Bank
         const activityBank = [
             { name: "מפגש בוקר", key: "img_morning", fallback: "☀️" },
             { name: "זמן גינה", key: "img_garden", fallback: "🌱" },
@@ -919,28 +911,29 @@
             } catch(e) {}
         }
 
-        if (!appData.shared) appData.shared = { duties: [], shabbat: ["", ""] };
+        if (!appData.shared) appData.shared = { shabbat: ["", ""] };
         if (!appData.images) appData.images = {};
 
         const githubImageMap = {
-    'img_bird': 'images/input_file_37.png',
-    'img_lion': 'images/lion2.png',
-    'img_unicorn': 'images/input_file_1.png',
-    'img_sport': 'images/input_file_33.png',
-    'img_sunny': 'images/input_file_3.png',
-    'img_partly': 'images/input_file_4.png',
-    'img_cool': 'images/input_file_8.png',
-    'img_rainy': 'images/input_file_5.png',
-    'img_stormy': 'images/input_file_13.png',
-    'img_breakfast': 'images/input_file_29.png',
-    'img_lunch': 'images/input_file_11.png',
-    'img_menu_schedule': 'images/input_file_34.png',
-    'img_attendance_main': 'images/input_file_1.png',
-    'img_yard_front': 'images/front_yard.png',
-    'img_yard': 'images/input_file_9.png',
-    'img_shabbat': 'images/kabalat_shabat.png',
-    'img_secretbox': 'images/secret_box.png',
-};
+            'img_bird': 'images/input_file_37.png',
+            'img_lion': 'images/lion2.png',
+            'img_unicorn': 'images/input_file_1.png',
+            'img_sport': 'images/input_file_33.png',
+            'img_sunny': 'images/input_file_3.png',
+            'img_partly': 'images/input_file_4.png',
+            'img_cool': 'images/input_file_8.png',
+            'img_rainy': 'images/input_file_5.png',
+            'img_stormy': 'images/input_file_13.png',
+            'img_breakfast': 'images/input_file_29.png',
+            'img_lunch': 'images/input_file_11.png',
+            'img_menu_schedule': 'images/input_file_34.png',
+            'img_attendance_main': 'images/input_file_16.png',
+            'img_yard_front': 'images/front_yard.png',
+            'img_yard': 'images/input_file_9.png',
+            'img_shabbat': 'images/kabalat_shabat.png',
+            'img_secretbox': 'images/secret_box.png',
+        };
+
         function getImageHtml(key, fallback) {
             if (appData.images && appData.images[key]) {
                 return `<img src="${appData.images[key]}">`;
@@ -970,23 +963,21 @@
         window.speechSynthesis.onvoiceschanged = () => { synthVoices = window.speechSynthesis.getVoices(); };
         
         function playBirdGreeting() {
-        // משיכת קובץ הסאונד מתיקיית אודיו בגיטהאב
-       const audio = new Audio('./audio/shaldag.mp3');
-        audio.play().catch(e => {
-            console.log("Audio play error:", e);
-            // הקראה אוטומטית כגיבוי אם הקובץ לא נטען עקב בעיית רשת
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                let msg = new SpeechSynthesisUtterance("בוקר טוב, גן שלדג!");
-                msg.lang = 'he-IL';
-                msg.rate = 0.9; 
-                msg.pitch = 1.3; 
-                let heVoice = synthVoices.find(v => v.lang.includes('he') || v.lang.includes('iw'));
-                if(heVoice) msg.voice = heVoice;
-                window.speechSynthesis.speak(msg);
-            }
-        });
-    }
+            const audio = new Audio('./audio/shaldag.mp3');
+            audio.play().catch(e => {
+                console.log("Audio play error:", e);
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    let msg = new SpeechSynthesisUtterance("בוקר טוב, גן שלדג!");
+                    msg.lang = 'he-IL';
+                    msg.rate = 0.9; 
+                    msg.pitch = 1.3; 
+                    let heVoice = synthVoices.find(v => v.lang.includes('he') || v.lang.includes('iw'));
+                    if(heVoice) msg.voice = heVoice;
+                    window.speechSynthesis.speak(msg);
+                }
+            });
+        }
 
         const daysMap = {'ראשון': 0, 'שני': 1, 'שלישי': 2, 'רביעי': 3, 'חמישי': 4, 'שישי': 5, 'שבת': 6};
         function getDateForDay(dayName) {
@@ -1020,7 +1011,6 @@
             renderAll();
         }
 
-        
         function uploadAudio(event, key) {
             const file = event.target.files[0];
             if (file) {
@@ -1037,44 +1027,19 @@
             }
         }
 
-        function playBirdGreeting() {
-            appData.audio = appData.audio || {};
-            if (appData.audio['audio_bird']) {
-                const audio = new Audio(appData.audio['audio_bird']);
-                audio.play().catch(e => {
-                    console.log("Audio play error:", e);
-                    alert("לא ניתן לנגן את קובץ האודיו. נסה שוב או בדוק את הפורמט.");
-                });
-                return;
-            }
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                let msg = new SpeechSynthesisUtterance("בוקר טוב, גן שלדג!");
-                msg.lang = 'he-IL';
-                msg.rate = 0.9; 
-                msg.pitch = 1.3; 
-                let heVoice = synthVoices.find(v => v.lang.includes('he') || v.lang.includes('iw'));
-                if(heVoice) msg.voice = heVoice;
-                window.speechSynthesis.speak(msg);
-            } else {
-                alert("הדפדפן שלך לא תומך בהקראת קול. טען קובץ אודיו בהגדרות!");
-            }
-        }
-
         function renderAll() {
             document.getElementById('header-bird-icon').innerHTML = getImageHtml('img_bird', '🐦');
             document.getElementById('menu-icon-attendance').innerHTML = getImageHtml('img_attendance_main', '👧👦');
             document.getElementById('menu-icon-schedule').innerHTML = getImageHtml('img_menu_schedule', '🥪');
             document.getElementById('menu-icon-secretbox').innerHTML = getImageHtml('img_secretbox', '🎁');
-            renderSecretBox();
-            renderHomeSchedule();
             
             renderHomeWeather();
             renderAttendance();
             renderDuties();
             renderShabbat();
             renderSchedule();
-            
+            renderSecretBox();
+            renderHomeSchedule();
 
             const keys = ['img_bird', 'img_menu_schedule', 'img_attendance_main', 'img_lion', 'img_unicorn', 'img_sunny', 'img_partly', 'img_rainy', 'img_cool', 'img_stormy', 'img_morning', 'img_garden', 'img_shabbat', 'img_yard_front', 'img_breakfast', 'img_chairs', 'img_free', 'img_lunch', 'img_music', 'img_sport', 'img_yard', 'img_groups', 'img_story', 'img_art', 'img_robot', 'img_other'];
             keys.forEach(k => {
@@ -1088,7 +1053,6 @@
                 if (aEl) aEl.innerHTML = '✅';
             }
 
-            
             document.getElementById('w-icon-img_sunny').innerHTML = getImageHtml('img_sunny', '☀️');
             document.getElementById('w-icon-img_partly').innerHTML = getImageHtml('img_partly', '⛅');
             document.getElementById('w-icon-img_cool').innerHTML = getImageHtml('img_cool', '🧥');
@@ -1159,67 +1123,105 @@
         }
 
         function renderDuties() {
-            const shared = appData.shared;
+            const dayData = getDayData();
+            const dutiesList = dayData.duties || [];
             const selectedGrid = document.getElementById('duties-selected-grid');
             const poolGrid = document.getElementById('duties-pool-grid');
             
             selectedGrid.innerHTML = '';
             poolGrid.innerHTML = '';
 
-            if (shared.duties.length === 0) {
-                selectedGrid.innerHTML = '<p style="color: #90A4AE; grid-column: 1/-1; text-align: center; padding: 20px;">טרם נבחרו תורנים השבוע. לחץ על ילדים מרשימת הגן למטה.</p>';
+            if (dutiesList.length === 0) {
+                selectedGrid.innerHTML = '<p style="color: #90A4AE; grid-column: 1/-1; text-align: center; padding: 20px;">טרם נבחרו תורנים היום. לחץ על ילדים מרשימת הגן למטה.</p>';
             } else {
-                shared.duties.forEach(id => {
+                dutiesList.forEach(id => {
                     const child = childrenList.find(c => c.id === id);
                     if (!child) return;
                     const card = document.createElement('div');
                     card.className = 'child-card present';
                     card.onclick = () => removeDuty(id);
-                    card.innerHTML = `
-                        <div class="animal-icon">${getImageHtml(child.type, child.fallback)}</div>
-                        <div class="child-name">${child.name}</div>
-                        <div class="child-status">⭐ תורן/ת</div>
-                    `;
+                    card.innerHTML = `<div class="animal-icon">${getImageHtml(child.type, child.fallback)}</div><div class="child-name">${child.name}</div><div class="child-status">⭐ תורן/ת</div>`;
                     selectedGrid.appendChild(card);
                 });
             }
 
             childrenList.forEach(child => {
-                if (shared.duties.includes(child.id)) return;
+                if (dutiesList.includes(child.id)) return;
                 const card = document.createElement('div');
                 card.className = 'child-card';
                 card.onclick = () => addDuty(child.id);
-                card.innerHTML = `
-                    <div class="animal-icon">${getImageHtml(child.type, child.fallback)}</div>
-                    <div class="child-name">${child.name}</div>
-                    <div class="child-status"></div>
-                `;
+                card.innerHTML = `<div class="animal-icon">${getImageHtml(child.type, child.fallback)}</div><div class="child-name">${child.name}</div><div class="child-status"></div>`;
                 poolGrid.appendChild(card);
             });
         }
 
         function addDuty(id) {
-            if (appData.shared.duties.length >= 6) {
-                alert("ניתן לבחור עד 6 תורנים בלבד!");
-                return;
-            }
-            appData.shared.duties.push(id);
-            saveAllData();
-            renderDuties();
+            const dayData = getDayData();
+            if (dayData.duties.length >= 6) { alert("עד 6 תורנים בלבד!"); return; }
+            dayData.duties.push(id); saveAllData(); renderDuties();
         }
 
-        function removeDuty(id) {
-            appData.shared.duties = appData.shared.duties.filter(i => i !== id);
-            saveAllData();
-            renderDuties();
-        }
-
+        function removeDuty(id) { getDayData().duties = getDayData().duties.filter(i => i !== id); saveAllData(); renderDuties(); }
+        
         function confirmResetDuties() {
-            showModal("איפוס תורנים", "האם לאפס את רשימת התורנים לשבוע חדש?", () => {
-                appData.shared.duties = [];
+            showModal("איפוס תורנים", "האם לאפס את רשימת התורנים להיום?", () => { getDayData().duties = []; saveAllData(); renderDuties(); closeModal(); });
+        }
+
+        function renderSecretBox() {
+            const dayData = getDayData();
+            const selectedId = dayData.secretBox;
+            const selectedGrid = document.getElementById('secretbox-selected-grid');
+            const poolGrid = document.getElementById('secretbox-pool-grid');
+            if(!selectedGrid || !poolGrid) return;
+            selectedGrid.innerHTML = ''; poolGrid.innerHTML = '';
+
+            if (!selectedId) {
+                selectedGrid.innerHTML = '<p style="color: #90A4AE; grid-column: 1/-1; text-align: center; padding: 20px;">טרם נבחר ילד/ת סוד. בחר מרשימת הגן.</p>';
+            } else {
+                const child = childrenList.find(c => c.id === selectedId);
+                if (child) {
+                    const card = document.createElement('div'); card.className = 'child-card present'; card.onclick = () => removeSecretBox();
+                    card.innerHTML = `<div class="animal-icon">${getImageHtml(child.type, child.fallback)}</div><div class="child-name">${child.name}</div><div class="child-status">🎁 סוד</div>`;
+                    selectedGrid.appendChild(card);
+                }
+            }
+
+            childrenList.forEach(child => {
+                if (child.id === selectedId) return;
+                const card = document.createElement('div'); card.className = 'child-card'; card.onclick = () => setSecretBox(child.id);
+                card.innerHTML = `<div class="animal-icon">${getImageHtml(child.type, child.fallback)}</div><div class="child-name">${child.name}</div><div class="child-status"></div>`;
+                poolGrid.appendChild(card);
+            });
+        }
+
+        function setSecretBox(id) { getDayData().secretBox = id; saveAllData(); renderSecretBox(); }
+        function removeSecretBox() { getDayData().secretBox = null; saveAllData(); renderSecretBox(); }
+        function confirmResetSecretBox() { showModal("איפוס סוד", "האם לאפס את קופסת הסוד להיום?", () => { removeSecretBox(); closeModal(); }); }
+
+        function promptSecretWord() {
+            const dayData = getDayData();
+            if (!dayData.secretBox) { alert("קודם יש לבחור ילד/ת סוד!"); return; }
+            const child = childrenList.find(c => c.id === dayData.secretBox);
+            const word = window.prompt(`מהי מילת הסוד ש${child.name} הביא/ה היום? (יופיע בארכיון)`);
+            if (word) {
+                appData.archive = appData.archive || {};
+                if (!appData.archive.secretbox) appData.archive.secretbox = [];
+                appData.archive.secretbox.unshift({ dateStr: new Date().toLocaleDateString('he-IL'), namesFormatted: `🎁 ${child.name}: המילה היא "${word}"` });
                 saveAllData();
-                renderDuties();
-                closeModal();
+                alert("הסוד נשמר בארכיון בהצלחה!");
+            }
+        }
+
+        function renderHomeSchedule() {
+            const track = document.getElementById('home-schedule-track');
+            if (!track) return;
+            track.innerHTML = '';
+            const schedule = getDayData().schedule || [];
+            if (schedule.length === 0) { track.innerHTML = '<span style="color:#90A4AE;">אין פעילויות.</span>'; return; }
+            schedule.forEach(item => {
+                const div = document.createElement('div'); div.className = 'home-schedule-item'; div.onclick = () => showScreen('schedule');
+                div.innerHTML = `<div class="act-icon">${getImageHtml(item.key, item.fallback)}</div><div style="font-weight:bold; color:#37474F; font-size:16px;">${item.name === 'אחר' ? (item.customName || 'פעילות') : item.name}</div>`;
+                track.appendChild(div);
             });
         }
 
@@ -1423,7 +1425,6 @@
             if (modalCallback) modalCallback();
         }
 
-        
         let currentArchiveType = 'shabbat';
         function openArchiveModal(type) {
             currentArchiveType = type;
@@ -1441,20 +1442,20 @@
         }
 
         function renderArchiveContent() {
-            appData.archive = appData.archive || { shabbat: [], duties: [] };
+            appData.archive = appData.archive || { shabbat: [], duties: [], secretbox: [] };
             const list = appData.archive[currentArchiveType] || [];
             const container = document.getElementById('archive-content');
             container.innerHTML = '';
 
             if (list.length === 0) {
-                container.innerHTML = '<p style="color: #90A4AE; text-align: center; padding: 20px;">אין עדיין שבועות שמורים בארכיון. לחץ על כפתור השמירה כדי להוסיף את השבוע הנוכחי.</p>';
+                container.innerHTML = '<p style="color: #90A4AE; text-align: center; padding: 20px;">אין עדיין פריטים שמורים בארכיון.</p>';
                 return;
             }
 
             list.forEach((item, index) => {
                 const div = document.createElement('div');
                 div.style.cssText = "background: #F5F5F5; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 2px solid #E0E0E0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;";
-                div.innerHTML = `<div><div style="font-weight: bold; color: var(--secondary); margin-bottom: 5px;">שבוע: ${item.dateStr}</div>
+                div.innerHTML = `<div><div style="font-weight: bold; color: var(--secondary); margin-bottom: 5px;">תאריך: ${item.dateStr}</div>
                                  <div style="color: #37474F;">${item.namesFormatted}</div></div>
                                  <button class="action-btn" onclick="deleteFromArchive('${currentArchiveType}', ${index})" style="background: #E53935; font-size: 14px; padding: 6px 12px;">מחק</button>`;
                 container.appendChild(div);
